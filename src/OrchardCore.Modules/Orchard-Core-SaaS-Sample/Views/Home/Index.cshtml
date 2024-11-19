@@ -9,9 +9,28 @@
 @inject OrchardCore.Modules.IClock Clock
 @model RegisterUserViewModel
 
+<h1>@T["Welcome to the SaaS module"]</h1>
 
+<form asp-action="Index" method="post">
+    <fieldset class="form-group">
+        <label asp-for="Email">@T["Email"]</label>
+        <input class="form-control" asp-for="Email" />
+    </fieldset>
 
-@{
+    <fieldset class="form-group">
+        <label asp-for="SiteName">@T["Site Name"]</label>
+        <input class="form-control" asp-for="SiteName" />
+    </fieldset>
+
+    <fieldset class="form-group">
+        <label asp-for="UserName">@T["UserName"]</label>
+        <input class="form-control" asp-for="UserName" />
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary">@T["Submit"]</button>
+</form>
+
+@* @{
     var defaultRecipe = Model.Recipes.FirstOrDefault(x => x.Name == Model.RecipeName) ?? Model.Recipes.FirstOrDefault();
     var localTimeZone = Clock.GetSystemTimeZone();
     var passwordOptions = new HtmlContentBuilder();
@@ -198,4 +217,4 @@
         $("#recipeButton").focus();
     }
 
-</script>
+</script> *@

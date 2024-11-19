@@ -45,9 +45,9 @@ public class HomeController : Controller
     {
         var recipes = await _setupService.GetSetupRecipesAsync();
         var defaultRecipe = recipes.FirstOrDefault(x => x.Tags.Contains("blank")) ?? recipes.FirstOrDefault();
-        viewModel.Recipes = recipes.Where(t => !t.Tags.Contains("developer") && !t.Tags.Contains("headless"));
-        viewModel.RecipeName = defaultRecipe?.Name;
-        viewModel.Secret = Guid.NewGuid().ToString();
+        //viewModel.Recipes = recipes.Where(t => !t.Tags.Contains("developer") && !t.Tags.Contains("headless"));
+        //viewModel.RecipeName = defaultRecipe?.Name;
+        //viewModel.Secret = Guid.NewGuid().ToString();
         return View(viewModel);
     }
 
@@ -59,24 +59,24 @@ public class HomeController : Controller
             var shellSettings = new ShellSettings
             {
                 Name = viewModel.SiteName,
-                RequestUrlPrefix = viewModel.Handle,
+                RequestUrlPrefix = viewModel.SiteName,
                 RequestUrlHost = "",
                 State = TenantState.Uninitialized,
             };
-            shellSettings["Secret"] = viewModel.Secret;
+            shellSettings["Secret"] = Guid.NewGuid().ToString();// viewModel.Secret;
             // This should be a setting in the SaaS module.
             shellSettings["DatabaseProvider"] = "Sqlite";
             shellSettings["ConnectionString"] = "";
-            shellSettings["TablePrefix"] = viewModel.Handle;
-            shellSettings["RecipeName"] = viewModel.RecipeName;
-            shellSettings["UserName"] = viewModel.UserName;
-            shellSettings["Password"] = viewModel.Password;
-            shellSettings["SiteTimeZone"] = viewModel.SiteTimeZone;
+            shellSettings["TablePrefix"] = viewModel.SiteName;
+            shellSettings["RecipeName"] = ""; //viewModel.RecipeName;
+            shellSettings["UserName"] = viewModel.UserName; //viewModel.UserName;
+            shellSettings["Password"] = "password"; // viewModel.Password;
+            shellSettings["SiteTimeZone"] = _clock.GetSystemTimeZone().TimeZoneId;//viewModel.SiteTimeZone;
 
             await _shellSettingsManager.SaveSettingsAsync(shellSettings);
             var shellContext = await _shellHost.GetOrCreateShellContextAsync(shellSettings);
 
-            var confirmationLink = Url.Action(nameof(HomeController.Confirm), "Home", new { email = viewModel.Email, handle = viewModel.Handle, siteName = viewModel.SiteName }, Request.Scheme);
+            var confirmationLink = Url.Action(nameof(HomeController.Confirm), "Home", new { email = viewModel.Email, handle = viewModel.UserName, siteName = viewModel.SiteName }, Request.Scheme);
 
             var message = new Email.MailMessage
             {
@@ -93,7 +93,7 @@ public class HomeController : Controller
 
             return RedirectToAction(nameof(Success));
         }
-        viewModel.Recipes = await _setupService.GetSetupRecipesAsync();
+        //viewModel.Recipes = await _setupService.GetSetupRecipesAsync();
         return View(nameof(Index), viewModel);
     }
 
