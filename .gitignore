@@ -211,3 +211,5 @@ src/Templates/**/content/**/.template.config/
 
 # BenchmarkDotNet artifacts
 BenchmarkDotNet.Artifacts
+/src/OrchardCore.Cms.Web/SMP__App_Data
+/src/OrchardCore.Modules/**/wwwroot/*

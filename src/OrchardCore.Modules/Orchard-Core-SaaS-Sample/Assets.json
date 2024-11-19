@@ -1,0 +1,8 @@
+[
+  {
+    "inputs": [
+      "node_modules/jquery/dist/jquery.js"
+    ],
+    "output": "wwwroot/Scripts/jquery.js"
+  }
+]

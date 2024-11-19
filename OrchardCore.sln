@@ -527,6 +527,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrchardCore.Queries.Core", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrchardCore.Sms.Azure", "src\OrchardCore.Modules\OrchardCore.Sms.Azure\OrchardCore.Sms.Azure.csproj", "{013C8BBF-6879-4B47-80C9-A466923E45E5}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrchardCore.SaaS", "src\OrchardCore.Modules\Orchard-Core-SaaS-Sample\OrchardCore.SaaS.csproj", "{D3B86458-4382-44E5-9110-74C1D170C3A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1395,6 +1397,10 @@ Global
 		{013C8BBF-6879-4B47-80C9-A466923E45E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{013C8BBF-6879-4B47-80C9-A466923E45E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{013C8BBF-6879-4B47-80C9-A466923E45E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3B86458-4382-44E5-9110-74C1D170C3A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3B86458-4382-44E5-9110-74C1D170C3A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3B86458-4382-44E5-9110-74C1D170C3A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3B86458-4382-44E5-9110-74C1D170C3A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1636,6 +1642,7 @@ Global
 		{4BAA08A2-878C-4B96-86BF-5B3DB2B6C2C7} = {F23AC6C2-DE44-4699-999D-3C478EF3D691}
 		{61B358F2-702C-40AA-9DF7-7121248FE6DE} = {F23AC6C2-DE44-4699-999D-3C478EF3D691}
 		{013C8BBF-6879-4B47-80C9-A466923E45E5} = {A066395F-6F73-45DC-B5A6-B4E306110DCE}
+		{D3B86458-4382-44E5-9110-74C1D170C3A3} = {A066395F-6F73-45DC-B5A6-B4E306110DCE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46A1D25A-78D1-4476-9CBF-25B75E296341}
