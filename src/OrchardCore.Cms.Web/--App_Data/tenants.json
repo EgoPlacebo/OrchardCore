@@ -1,0 +1,19 @@
+{
+  "Default": {
+    "VersionId": "47182msk6cwe9yd90nmz1rkm54",
+    "TenantId": "4j461apcztrpzvmjgphaqb77m4",
+    "State": "Running"
+  },
+  "UICreatedTenant": {
+    "VersionId": "401hs9pw04qqz7zj54gpac9p4h",
+    "TenantId": "4bkn6d51fnx3avj6xsbxe1efdk",
+    "RequestUrlPrefix": "UICreatedSite",
+    "State": "Running"
+  },
+  "UiCreatedAgencyTenant": {
+    "VersionId": "4cvvmgv0z506xtavq3757e46mq",
+    "TenantId": "43cf6xapcbc0vsxzbs0wzjftm7",
+    "RequestUrlPrefix": "UiCreatedAgency",
+    "State": "Running"
+  }
+}

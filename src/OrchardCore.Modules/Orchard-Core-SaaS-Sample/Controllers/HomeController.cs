@@ -67,11 +67,12 @@ public class HomeController : Controller
             // This should be a setting in the SaaS module.
             shellSettings["DatabaseProvider"] = "Sqlite";
             shellSettings["ConnectionString"] = "";
-            shellSettings["TablePrefix"] = viewModel.SiteName;
-            shellSettings["RecipeName"] = ""; //viewModel.RecipeName;
-            shellSettings["UserName"] = viewModel.UserName; //viewModel.UserName;
-            shellSettings["Password"] = "password"; // viewModel.Password;
-            shellSettings["SiteTimeZone"] = _clock.GetSystemTimeZone().TimeZoneId;//viewModel.SiteTimeZone;
+            //shellSettings["FeatureProfile"] = "";
+            //shellSettings["TablePrefix"] = "";
+            shellSettings["RecipeName"] = "Blog"; //viewModel.RecipeName;
+            //shellSettings["UserName"] = viewModel.UserName; //viewModel.UserName;
+            //shellSettings["Password"] = "P@ssword1"; // viewModel.Password;
+            //shellSettings["SiteTimeZone"] = _clock.GetSystemTimeZone().TimeZoneId;//viewModel.SiteTimeZone;
 
             await _shellSettingsManager.SaveSettingsAsync(shellSettings);
             var shellContext = await _shellHost.GetOrCreateShellContextAsync(shellSettings);
@@ -112,7 +113,7 @@ public class HomeController : Controller
         }
 
         var recipes = await _setupService.GetSetupRecipesAsync();
-        var selectedRecipe = this._shellSettings["RecipeName"];
+        var selectedRecipe = "blog"; // this._shellSettings["RecipeName"];
         var recipe = recipes.FirstOrDefault(x => x.Tags.Contains(selectedRecipe)) ?? recipes.FirstOrDefault();
 
         if (recipe == null)
