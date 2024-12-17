@@ -69,7 +69,7 @@ public class HomeController : Controller
             shellSettings["ConnectionString"] = "";
             //shellSettings["FeatureProfile"] = "";
             //shellSettings["TablePrefix"] = "";
-            shellSettings["RecipeName"] = "Blog"; //viewModel.RecipeName;
+            //shellSettings["RecipeName"] = "Blog"; //viewModel.RecipeName;
             //shellSettings["UserName"] = viewModel.UserName; //viewModel.UserName;
             //shellSettings["Password"] = "P@ssword1"; // viewModel.Password;
             //shellSettings["SiteTimeZone"] = _clock.GetSystemTimeZone().TimeZoneId;//viewModel.SiteTimeZone;
@@ -152,6 +152,6 @@ public class HomeController : Controller
 
             return Redirect("Error");
         }
-        return Redirect("~/" + handle);
+        return Redirect("~/" + siteName);
     }
 }
