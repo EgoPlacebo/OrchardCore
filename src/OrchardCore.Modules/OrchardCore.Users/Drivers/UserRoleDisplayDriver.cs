@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -58,7 +57,7 @@ public sealed class UserRoleDisplayDriver : DisplayDriver<User>
         // This view is always rendered, however there will be no editable roles if the user does not have permission to edit them.
         return Initialize<EditUserRoleViewModel>("UserRoleFields_Edit", async model =>
         {
-            var roles = await GetRoleAsync();
+            var roles = await _roleService.GetAssignableRolesAsync();
 
             // When a user is in a role that the current user cannot manage the role is not shown.
             var authorizedRoleNames = await GetAccessibleRoleNamesAsync(roles);
@@ -79,7 +78,7 @@ public sealed class UserRoleDisplayDriver : DisplayDriver<User>
             model.Roles = roleEntries.ToArray();
         })
         .Location("Content:1.10")
-        .RenderWhen(() => _authorizationService.AuthorizeAsync(_httpContextAccessor.HttpContext.User, CommonPermissions.EditUsers, user));
+        .RenderWhen(() => _authorizationService.AuthorizeAsync(_httpContextAccessor.HttpContext.User, UsersPermissions.EditUsers, user));
     }
 
     public override async Task<IDisplayResult> UpdateAsync(User user, UpdateEditorContext context)
@@ -88,7 +87,8 @@ public sealed class UserRoleDisplayDriver : DisplayDriver<User>
 
         await context.Updater.TryUpdateModelAsync(model, Prefix);
 
-        var roles = await GetRoleAsync();
+        var roles = await _roleService.GetAssignableRolesAsync();
+
         // Authorize each role in the model to prevent html injection.
         var accessibleRoleNames = await GetAccessibleRoleNamesAsync(roles);
         var currentUserRoleNames = await _userRoleStore.GetRolesAsync(user, default);
@@ -154,20 +154,13 @@ public sealed class UserRoleDisplayDriver : DisplayDriver<User>
         return Edit(user, context);
     }
 
-    private async Task<IEnumerable<IRole>> GetRoleAsync()
-    {
-        var roles = await _roleService.GetRolesAsync();
-
-        return roles.Where(role => !RoleHelper.SystemRoleNames.Contains(role.RoleName));
-    }
-
     private async Task<IEnumerable<string>> GetAccessibleRoleNamesAsync(IEnumerable<IRole> roles)
     {
         var authorizedRoleNames = new List<string>();
 
         foreach (var role in roles)
         {
-            if (await _authorizationService.AuthorizeAsync(_httpContextAccessor.HttpContext.User, CommonPermissions.AssignRoleToUsers, role))
+            if (await _authorizationService.AuthorizeAsync(_httpContextAccessor.HttpContext.User, UsersPermissions.AssignRoleToUsers, role))
             {
                 authorizedRoleNames.Add(role.RoleName);
             }

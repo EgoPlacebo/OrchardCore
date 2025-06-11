@@ -1,35 +1,34 @@
 using System.Text.Json.Nodes;
 using OrchardCore.Deployment;
-using OrchardCore.Search.Lucene.Model;
+using OrchardCore.Indexing;
+using OrchardCore.Indexing.Models;
 
 namespace OrchardCore.Search.Lucene.Deployment;
 
-public class LuceneIndexDeploymentSource : IDeploymentSource
+public sealed class LuceneIndexDeploymentSource
+    : DeploymentSourceBase<LuceneIndexDeploymentStep>
 {
-    private readonly LuceneIndexSettingsService _luceneIndexSettingsService;
+    private readonly IIndexProfileStore _indexStore;
 
-    public LuceneIndexDeploymentSource(LuceneIndexSettingsService luceneIndexSettingsService)
+    public LuceneIndexDeploymentSource(IIndexProfileStore indexStore)
     {
-        _luceneIndexSettingsService = luceneIndexSettingsService;
+        _indexStore = indexStore;
     }
 
-    public async Task ProcessDeploymentStepAsync(DeploymentStep step, DeploymentPlanResult result)
+    protected override async Task ProcessAsync(LuceneIndexDeploymentStep step, DeploymentPlanResult result)
     {
-        if (step is not LuceneIndexDeploymentStep luceneIndexStep)
-        {
-            return;
-        }
-
-        var indexSettings = await _luceneIndexSettingsService.GetSettingsAsync();
+        var indexSettings = await _indexStore.GetByProviderAsync(LuceneConstants.ProviderName);
 
         var data = new JsonArray();
-        var indicesToAdd = luceneIndexStep.IncludeAll ? indexSettings.Select(x => x.IndexName).ToArray() : luceneIndexStep.IndexNames;
+        var indicesToAdd = step.IncludeAll
+            ? indexSettings.Select(x => x.IndexName).ToArray()
+            : step.IndexNames;
 
         foreach (var index in indexSettings)
         {
             if (indicesToAdd.Contains(index.IndexName))
             {
-                var indexSettingsDict = new Dictionary<string, LuceneIndexSettings>
+                var indexSettingsDict = new Dictionary<string, IndexProfile>
                 {
                     { index.IndexName, index },
                 };

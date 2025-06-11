@@ -5,7 +5,7 @@ namespace OrchardCore.DisplayManagement.Title;
 
 public class PageTitleBuilder : IPageTitleBuilder
 {
-    private readonly static HtmlString _defaultTitleSeparator = new(" - ");
+    private static readonly HtmlString _defaultTitleSeparator = new(" - ");
 
     private readonly List<PositionalTitlePart> _titleParts;
     private HtmlContentBuilder _title;
@@ -28,7 +28,7 @@ public class PageTitleBuilder : IPageTitleBuilder
         _titleParts.Add(new PositionalTitlePart
         {
             Value = titlePart,
-            Position = position
+            Position = position,
         });
     }
 

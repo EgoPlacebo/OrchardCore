@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using OrchardCore.DisplayManagement.Descriptors;
 
 namespace OrchardCore.DisplayManagement;
@@ -14,6 +15,10 @@ public static class ShapeTableProviderExtensions
     /// <typeparam name="TShapeTableProvider">The <see cref="IShapeTableProvider"/> to be registered.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     public static IServiceCollection AddShapeTableProvider<TShapeTableProvider>(this IServiceCollection services)
-        where TShapeTableProvider: class, IShapeTableProvider
-        => services.AddScoped<IShapeTableProvider, TShapeTableProvider>();
+        where TShapeTableProvider : class, IShapeTableProvider
+    {
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<IShapeTableProvider, TShapeTableProvider>());
+
+        return services;
+    }
 }

@@ -1,53 +1,90 @@
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
+using OrchardCore.Indexing;
+using OrchardCore.Indexing.Core;
 using OrchardCore.Recipes.Models;
 using OrchardCore.Recipes.Services;
-using OrchardCore.Search.Lucene.Model;
 
 namespace OrchardCore.Search.Lucene.Recipes;
 
 /// <summary>
-/// This recipe step creates a lucene index.
+/// This recipe step creates a Lucene index.
 /// </summary>
-public sealed class LuceneIndexStep : IRecipeStepHandler
+public sealed class LuceneIndexStep : NamedRecipeStepHandler
 {
-    private readonly LuceneIndexingService _luceneIndexingService;
+    private readonly IIndexProfileManager _indexManager;
+    private readonly ILogger _logger;
     private readonly LuceneIndexManager _luceneIndexManager;
 
     public LuceneIndexStep(
-        LuceneIndexingService luceneIndexingService,
-        LuceneIndexManager luceneIndexManager
-        )
+        IIndexProfileManager indexManager,
+        LuceneIndexManager luceneIndexManager,
+        ILogger<LuceneIndexStep> logger
+        ) : base("lucene-index")
     {
         _luceneIndexManager = luceneIndexManager;
-        _luceneIndexingService = luceneIndexingService;
+        _indexManager = indexManager;
+        _logger = logger;
     }
 
-    public async Task ExecuteAsync(RecipeExecutionContext context)
+    protected override async Task HandleAsync(RecipeExecutionContext context)
     {
-        if (!string.Equals(context.Name, "lucene-index", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
+        var settings = context.Step.ToObject<ContentStepModel>();
 
-        if (context.Step["Indices"] is not JsonArray jsonArray)
+        foreach (var entry in settings.Indices)
         {
-            return;
-        }
-
-        foreach (var index in jsonArray)
-        {
-            var luceneIndexSettings = index.ToObject<Dictionary<string, LuceneIndexSettings>>().FirstOrDefault();
-
-            if (!_luceneIndexManager.Exists(luceneIndexSettings.Key))
+            foreach (var item in entry.AsObject())
             {
-                luceneIndexSettings.Value.IndexName = luceneIndexSettings.Key;
-                await _luceneIndexingService.CreateIndexAsync(luceneIndexSettings.Value);
+                var indexName = item.Key;
+
+                if (string.IsNullOrEmpty(indexName))
+                {
+                    _logger.LogWarning("The Lucene index name is empty. Skipping creation.");
+
+                    continue;
+                }
+
+                var index = await _indexManager.FindByNameAndProviderAsync(indexName, LuceneConstants.ProviderName);
+
+                if (index is null)
+                {
+                    var data = item.Value;
+                    data[nameof(index.IndexName)] = indexName;
+
+                    index = await _indexManager.NewAsync(LuceneConstants.ProviderName, IndexingConstants.ContentsIndexSource, data);
+
+                    var validationResult = await _indexManager.ValidateAsync(index);
+
+                    if (!validationResult.Succeeded)
+                    {
+                        foreach (var error in validationResult.Errors)
+                        {
+                            context.Errors.Add(error.ErrorMessage);
+                        }
+
+                        continue;
+                    }
+
+                    await _indexManager.CreateAsync(index);
+                }
+
+                var exists = await _luceneIndexManager.ExistsAsync(index.IndexFullName);
+
+                if (!exists)
+                {
+                    exists = await _luceneIndexManager.CreateAsync(index);
+                }
+
+                if (exists)
+                {
+                    await _indexManager.SynchronizeAsync(index);
+                }
             }
         }
     }
-}
 
-public sealed class ContentStepModel
-{
-    public JsonObject Data { get; set; }
+    internal sealed class ContentStepModel
+    {
+        public JsonArray Indices { get; set; }
+    }
 }

@@ -47,6 +47,12 @@ public sealed class Startup : StartupBase
                 configurationOptions.CertificateValidation += IgnoreCertificateErrors;
             }
 
+            var allowAdmin = section.GetValue<bool?>("AllowAdmin", null);
+            if (allowAdmin.HasValue)
+            {
+                configurationOptions.AllowAdmin = allowAdmin.Value;
+            }
+
             services.Configure<RedisOptions>(options =>
             {
                 options.Configuration = configuration;
@@ -78,7 +84,11 @@ public sealed class RedisCacheStartup : StartupBase
     {
         if (services.Any(d => d.ServiceType == typeof(IRedisService)))
         {
-            services.AddSingleton<IDistributedCache, RedisCacheWrapper>();
+            services.AddSingleton<IDistributedCache, RedisCacheWrapper>(sp =>
+            {
+                var optionsAccessor = sp.GetRequiredService<IOptions<RedisCacheOptions>>();
+                return new RedisCacheWrapper(new RedisCache(optionsAccessor));
+            });
             services.AddTransient<IConfigureOptions<RedisCacheOptions>, RedisCacheOptionsSetup>();
             services.AddScoped<ITagCache, RedisTagCache>();
         }

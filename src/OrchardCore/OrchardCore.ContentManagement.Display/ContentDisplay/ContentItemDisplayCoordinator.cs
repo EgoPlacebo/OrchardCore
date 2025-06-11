@@ -102,7 +102,7 @@ public class ContentItemDisplayCoordinator : IContentDisplayHandler
 
             if (part.GetType() == typeof(ContentPart) && partTypeName != contentTypePartDefinition.ContentTypeDefinition.Name)
             {
-                var shapeType = context.DisplayType != "Detail" ? "ContentPart_" + context.DisplayType : "ContentPart";
+                var shapeType = context.DisplayType != OrchardCoreConstants.DisplayType.Detail ? "ContentPart_" + context.DisplayType : "ContentPart";
 
                 var shapeResult = new ShapeResult(shapeType, ctx => ctx.ShapeFactory.CreateAsync(shapeType, () => ValueTask.FromResult<IShape>(new ZoneHolding(() => ctx.ShapeFactory.CreateAsync("Zone")))));
                 shapeResult.Differentiator(partName);
@@ -154,6 +154,12 @@ public class ContentItemDisplayCoordinator : IContentDisplayHandler
 
                 var contentPartShape = shapeResult.Shape;
 
+                if (contentPartShape == null)
+                {
+                    // Part is explicitly hidden in placement.
+                    continue;
+                }
+
                 // Make the ContentPart property available on the shape
                 contentPartShape.Properties[partTypeName] = part.Content;
                 contentPartShape.Properties["ContentItem"] = part.ContentItem;
@@ -201,7 +207,7 @@ public class ContentItemDisplayCoordinator : IContentDisplayHandler
         var partsShape = await context.ShapeFactory.CreateAsync("ContentZone",
             Arguments.From(new
             {
-                Identifier = contentItem.ContentItemId
+                Identifier = contentItem.ContentItemId,
             }));
 
         contentShape.Zones["Parts"] = partsShape;
@@ -292,7 +298,7 @@ public class ContentItemDisplayCoordinator : IContentDisplayHandler
         var partsShape = await context.ShapeFactory.CreateAsync("ContentZone",
             Arguments.From(new
             {
-                Identifier = contentItem.ContentItemId
+                Identifier = contentItem.ContentItemId,
             }));
 
         contentShape.Zones["Parts"] = partsShape;

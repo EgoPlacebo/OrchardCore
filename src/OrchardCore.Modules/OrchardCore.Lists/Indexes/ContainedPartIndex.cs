@@ -52,11 +52,11 @@ public class ContainedPartIndexProvider : IndexProvider<ContentItem>
                     Latest = contentItem.Latest,
                 };
 
-                if (containedPartIndex.DisplayText?.Length > ContainedPartIndex.MaxDisplayTextSize)
+                if (contentItem.DisplayText?.Length > ContainedPartIndex.MaxDisplayTextSize)
                 {
                     containedPartIndex.DisplayText = contentItem.DisplayText[..ContainedPartIndex.MaxDisplayTextSize];
-                } 
-                else 
+                }
+                else
                 {
                     containedPartIndex.DisplayText = contentItem.DisplayText;
                 }

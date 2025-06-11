@@ -19,7 +19,7 @@ public class OpenIdApplicationStore<TApplication> : IOpenIdApplicationStore<TApp
     private static readonly JsonSerializerOptions _serializerOptions = new()
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        WriteIndented = false
+        WriteIndented = false,
     };
 
     private const string OpenIdCollection = OpenIdAuthorization.OpenIdCollection;
@@ -50,7 +50,7 @@ public class OpenIdApplicationStore<TApplication> : IOpenIdApplicationStore<TApp
         cancellationToken.ThrowIfCancellationRequested();
 
         await _session.SaveAsync(application, collection: OpenIdCollection);
-        await _session.SaveChangesAsync();
+        await _session.FlushAsync();
     }
 
     /// <inheritdoc/>
@@ -61,7 +61,7 @@ public class OpenIdApplicationStore<TApplication> : IOpenIdApplicationStore<TApp
         cancellationToken.ThrowIfCancellationRequested();
 
         _session.Delete(application, collection: OpenIdCollection);
-        await _session.SaveChangesAsync();
+        await _session.FlushAsync();
     }
 
     /// <inheritdoc/>

@@ -10,22 +10,18 @@ namespace OrchardCore.OpenId.Recipes;
 /// <summary>
 /// This recipe step sets general OpenID Connect settings.
 /// </summary>
-public sealed class OpenIdServerSettingsStep : IRecipeStepHandler
+public sealed class OpenIdServerSettingsStep : NamedRecipeStepHandler
 {
     private readonly IOpenIdServerService _serverService;
 
     public OpenIdServerSettingsStep(IOpenIdServerService serverService)
+        : base(nameof(OpenIdServerSettings))
     {
         _serverService = serverService;
     }
 
-    public async Task ExecuteAsync(RecipeExecutionContext context)
+    protected override async Task HandleAsync(RecipeExecutionContext context)
     {
-        if (!string.Equals(context.Name, nameof(OpenIdServerSettings), StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
         var model = context.Step.ToObject<OpenIdServerSettingsStepModel>();
         var settings = await _serverService.LoadSettingsAsync();
 
@@ -50,6 +46,8 @@ public sealed class OpenIdServerSettingsStep : IRecipeStepHandler
             new PathString("/connect/userinfo") : PathString.Empty;
         settings.IntrospectionEndpointPath = model.EnableIntrospectionEndpoint ?
             new PathString("/connect/introspect") : PathString.Empty;
+        settings.PushedAuthorizationEndpointPath = model.EnablePushedAuthorizationEndpoint ?
+            new PathString("/connect/par") : PathString.Empty;
         settings.RevocationEndpointPath = model.EnableRevocationEndpoint ?
             new PathString("/connect/revoke") : PathString.Empty;
 
@@ -64,6 +62,7 @@ public sealed class OpenIdServerSettingsStep : IRecipeStepHandler
         settings.DisableRollingRefreshTokens = model.DisableRollingRefreshTokens;
         settings.UseReferenceAccessTokens = model.UseReferenceAccessTokens;
         settings.RequireProofKeyForCodeExchange = model.RequireProofKeyForCodeExchange;
+        settings.RequirePushedAuthorizationRequests = model.RequirePushedAuthorizationRequests;
 
         await _serverService.UpdateSettingsAsync(settings);
     }

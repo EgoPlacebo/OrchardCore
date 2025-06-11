@@ -4,25 +4,8 @@
 @using OrchardCore.Users.Models
 @using Microsoft.Extensions.Options
 @using Microsoft.AspNetCore.Identity
+
 @inject IOptions<IdentityOptions> IdentityOptions
-
-@if (Site.As<RegistrationSettings>().UsersMustValidateEmail)
-{
-    <div class="mb-3">
-        <div class="form-check">
-            <input asp-for="EmailConfirmed" type="checkbox" class="form-check-input" asp-is-disabled="@Model.IsEditingDisabled">
-            <label class="form-check-label" asp-for="EmailConfirmed">@T["Email confirmed"]</label>
-        </div>
-    </div>
-}
-
-<div class="mb-3">
-    <div class="form-check form-switch">
-        <input asp-for="IsEnabled" type="checkbox" class="form-check-input" checked="@Model.IsEnabled" asp-is-disabled="@Model.IsEditingDisabled" />
-        <label asp-for="IsEnabled" class="form-check-label cursor-pointer">@T["Is enabled?"]</label>
-        <span class="hint dashed">@T["Uncheck to disable this user account."]</span>
-    </div>
-</div>
 
 @if (Model.IsNewRequest)
 {

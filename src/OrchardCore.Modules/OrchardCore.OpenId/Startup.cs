@@ -29,10 +29,9 @@ using OrchardCore.OpenId.Services;
 using OrchardCore.OpenId.Services.Handlers;
 using OrchardCore.OpenId.Settings;
 using OrchardCore.OpenId.Tasks;
-using OrchardCore.Recipes.Services;
+using OrchardCore.Recipes;
 using OrchardCore.Security;
 using OrchardCore.Security.Permissions;
-using OrchardCore.Settings;
 
 namespace OrchardCore.OpenId;
 
@@ -51,12 +50,8 @@ public sealed class Startup : StartupBase
                        .UseYesSql();
             });
 
-        // Note: the following services are registered using TryAddEnumerable to prevent duplicate registrations.
-        services.TryAddEnumerable(new[]
-        {
-            ServiceDescriptor.Scoped<IPermissionProvider, Permissions>(),
-            ServiceDescriptor.Scoped<INavigationProvider, AdminMenu>(),
-        });
+        services.AddPermissionProvider<Permissions>();
+        services.AddNavigationProvider<ManagementAdminMenu>();
     }
 }
 
@@ -65,15 +60,14 @@ public sealed class ClientStartup : StartupBase
 {
     public override void ConfigureServices(IServiceCollection services)
     {
+        services.AddNavigationProvider<ClientAdminMenu>();
+
         services.TryAddSingleton<IOpenIdClientService, OpenIdClientService>();
 
         // Note: the following services are registered using TryAddEnumerable to prevent duplicate registrations.
-        services.TryAddEnumerable(new[]
-        {
-            ServiceDescriptor.Scoped<IDisplayDriver<ISite>, OpenIdClientSettingsDisplayDriver>(),
-            ServiceDescriptor.Scoped<IRecipeStepHandler, OpenIdClientSettingsStep>()
-        });
+        services.AddSiteDisplayDriver<OpenIdClientSettingsDisplayDriver>();
 
+        services.AddRecipeExecutionStep<OpenIdClientSettingsStep>();
         // Register the options initializers required by the OpenID Connect client handler.
         services.TryAddEnumerable(new[]
         {
@@ -82,7 +76,7 @@ public sealed class ClientStartup : StartupBase
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIdConnectOptions>, OpenIdClientConfiguration>(),
 
             // Built-in initializers:
-            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIdConnectOptions>, OpenIdConnectPostConfigureOptions>()
+            ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIdConnectOptions>, OpenIdConnectPostConfigureOptions>(),
         });
     }
 }
@@ -92,6 +86,8 @@ public sealed class ServerStartup : StartupBase
 {
     public override void ConfigureServices(IServiceCollection services)
     {
+        services.AddNavigationProvider<ServerAdminMenu>();
+
         services.AddOpenIddict()
             .AddServer(options =>
             {
@@ -102,17 +98,20 @@ public sealed class ServerStartup : StartupBase
         services.TryAddSingleton<IOpenIdServerService, OpenIdServerService>();
 
         services.AddDataMigration<DefaultScopesMigration>();
+        services.AddDataMigration<PushedAuthorizationRequestsMigration>();
+
+        services.AddDisplayDriver<OpenIdServerSettings, OpenIdServerSettingsDisplayDriver>();
+
         // Note: the following services are registered using TryAddEnumerable to prevent duplicate registrations.
         services.TryAddEnumerable(new[]
         {
             ServiceDescriptor.Scoped<IRoleRemovedEventHandler, OpenIdApplicationRoleRemovedEventHandler>(),
-            ServiceDescriptor.Scoped<IDisplayDriver<OpenIdServerSettings>, OpenIdServerSettingsDisplayDriver>(),
-            ServiceDescriptor.Scoped<IRecipeStepHandler, OpenIdServerSettingsStep>(),
-            ServiceDescriptor.Scoped<IRecipeStepHandler, OpenIdApplicationStep>(),
-            ServiceDescriptor.Scoped<IRecipeStepHandler, OpenIdScopeStep>(),
-
-            ServiceDescriptor.Singleton<IBackgroundTask, OpenIdBackgroundTask>()
+            ServiceDescriptor.Singleton<IBackgroundTask, OpenIdBackgroundTask>(),
         });
+
+        services.AddRecipeExecutionStep<OpenIdServerSettingsStep>()
+            .AddRecipeExecutionStep<OpenIdApplicationStep>()
+            .AddRecipeExecutionStep<OpenIdScopeStep>();
 
         // Note: the OpenIddict ASP.NET host adds an authentication options initializer that takes care of
         // registering the server ASP.NET Core handler. Yet, it MUST NOT be registered at this stage
@@ -126,7 +125,7 @@ public sealed class ServerStartup : StartupBase
             ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIdServerConfiguration>(),
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerOptions>, OpenIdServerConfiguration>(),
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerAspNetCoreOptions>, OpenIdServerConfiguration>(),
-            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerDataProtectionOptions>, OpenIdServerConfiguration>()
+            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictServerDataProtectionOptions>, OpenIdServerConfiguration>(),
         });
     }
 
@@ -209,6 +208,8 @@ public sealed class ValidationStartup : StartupBase
 {
     public override void ConfigureServices(IServiceCollection services)
     {
+        services.AddNavigationProvider<ValidationAdminMenu>();
+
         services.AddOpenIddict()
             .AddValidation(options =>
             {
@@ -220,11 +221,9 @@ public sealed class ValidationStartup : StartupBase
         services.TryAddSingleton<IOpenIdValidationService, OpenIdValidationService>();
 
         // Note: the following services are registered using TryAddEnumerable to prevent duplicate registrations.
-        services.TryAddEnumerable(new[]
-        {
-            ServiceDescriptor.Scoped<IDisplayDriver<OpenIdValidationSettings>, OpenIdValidationSettingsDisplayDriver>(),
-            ServiceDescriptor.Scoped<IRecipeStepHandler, OpenIdValidationSettingsStep>()
-        });
+        services.AddDisplayDriver<OpenIdValidationSettings, OpenIdValidationSettingsDisplayDriver>();
+
+        services.AddRecipeExecutionStep<OpenIdValidationSettingsStep>();
 
         // Note: the OpenIddict ASP.NET host adds an authentication options initializer that takes care of
         // registering the validation handler. Yet, it MUST NOT be registered at this stage as it is
@@ -238,7 +237,7 @@ public sealed class ValidationStartup : StartupBase
             ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, OpenIdValidationConfiguration>(),
             ServiceDescriptor.Singleton<IConfigureOptions<ApiAuthorizationOptions>, OpenIdValidationConfiguration>(),
             ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictValidationOptions>, OpenIdValidationConfiguration>(),
-            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictValidationDataProtectionOptions>, OpenIdValidationConfiguration>()
+            ServiceDescriptor.Singleton<IConfigureOptions<OpenIddictValidationDataProtectionOptions>, OpenIdValidationConfiguration>(),
         });
     }
 }

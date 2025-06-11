@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using OrchardCore.Admin;
 using OrchardCore.DisplayManagement.Handlers;
 using OrchardCore.DisplayManagement.Views;
+using OrchardCore.Settings;
 using OrchardCore.Users.Models;
 
 namespace OrchardCore.Users.Drivers;
@@ -8,13 +11,20 @@ namespace OrchardCore.Users.Drivers;
 public sealed class UserMenuDisplayDriver : DisplayDriver<UserMenu>
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IAuthorizationService _authorizationService;
+    private readonly ISiteService _siteService;
 
-    public UserMenuDisplayDriver(IHttpContextAccessor httpContextAccessor)
+    public UserMenuDisplayDriver(
+        IHttpContextAccessor httpContextAccessor,
+        IAuthorizationService authorizationService,
+        ISiteService siteService)
     {
         _httpContextAccessor = httpContextAccessor;
+        _authorizationService = authorizationService;
+        _siteService = siteService;
     }
 
-    public override Task<IDisplayResult> DisplayAsync(UserMenu model, BuildDisplayContext context)
+    public override async Task<IDisplayResult> DisplayAsync(UserMenu model, BuildDisplayContext context)
     {
         var results = new List<IDisplayResult>
         {
@@ -38,13 +48,32 @@ public sealed class UserMenuDisplayDriver : DisplayDriver<UserMenu>
             .Differentiator("SignOut"),
         };
 
-        if (_httpContextAccessor.HttpContext.User.HasClaim("Permission", "AccessAdminPanel"))
+        var loginSettings = await _siteService.GetSettingsAsync<LoginSettings>();
+
+        if (await _authorizationService.AuthorizeAsync(_httpContextAccessor.HttpContext.User, AdminPermissions.AccessAdminPanel))
         {
             results.Add(View("UserMenuItems__Dashboard", model)
                 .Location("Detail", "Content:1.1")
                 .Differentiator("Dashboard"));
+
+            if (!loginSettings.DisableLocalLogin)
+            {
+                results.Add(View("UserMenuItems__ChangePassword", model)
+                    .Location("Detail", "Content:10")
+                    .Location("DetailAdmin", "Content:10")
+                    .Differentiator("ChangePassword"));
+            }
+        }
+        else
+        {
+            if (!loginSettings.DisableLocalLogin)
+            {
+                results.Add(View("UserMenuItems__ChangePassword", model)
+                .Location("DetailAdmin", "Content:10")
+                .Differentiator("ChangePassword"));
+            }
         }
 
-        return CombineAsync(results);
+        return Combine(results);
     }
 }

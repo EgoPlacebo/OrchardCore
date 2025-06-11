@@ -62,7 +62,7 @@ public class CreateContentTask : ContentTask
         return Outcomes(S["Done"], S["Failed"]);
     }
 
-    public async override Task<ActivityExecutionResult> ExecuteAsync(WorkflowExecutionContext workflowContext, ActivityContext activityContext)
+    public override async Task<ActivityExecutionResult> ExecuteAsync(WorkflowExecutionContext workflowContext, ActivityContext activityContext)
     {
         if (InlineEvent.IsStart && InlineEvent.ContentType == ContentType)
         {
@@ -95,10 +95,12 @@ public class CreateContentTask : ContentTask
             contentItem.Merge(JObject.Parse(contentProperties));
         }
 
-        var result = await ContentManager.UpdateValidateAndCreateAsync(contentItem, VersionOptions.Draft);
+        var result = await ContentManager.ValidateAsync(contentItem);
 
         if (result.Succeeded)
         {
+            await ContentManager.CreateAsync(contentItem, VersionOptions.Draft);
+
             if (Publish)
             {
                 await ContentManager.PublishAsync(contentItem);

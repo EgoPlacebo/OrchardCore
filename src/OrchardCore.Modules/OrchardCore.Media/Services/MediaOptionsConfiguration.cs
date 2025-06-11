@@ -47,6 +47,7 @@ public sealed class MediaOptionsConfiguration : IConfigureOptions<MediaOptions>
         ".mpg",
         ".ogv", // (Ogg)
         ".3gp", // (3GPP)
+        ".webm",
     ];
 
     private const int DefaultMaxBrowserCacheDays = 30;
@@ -119,7 +120,7 @@ public sealed class MediaOptionsConfiguration : IConfigureOptions<MediaOptions>
             {
                 ctx.Context.Response.Headers.CacheControl = ctx.Context.IsSecureMediaRequested() ? secureCacheControl : cacheControl;
                 ctx.Context.Response.Headers.ContentSecurityPolicy = contentSecurityPolicy;
-            }
+            },
         };
     }
 }
